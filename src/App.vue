@@ -21,7 +21,7 @@
     <!-- Checkbox para mostrar solo pendientes -->
     <div style="margin-bottom: 10px;">
       <label>
-        <input type="checkbox" v-model="showPendingOnly" />
+        <input type="checkbox" v-model="pendientes" />
         Mostrar solo tareas pendientes
       </label>
     </div>
@@ -29,7 +29,7 @@
     <!-- Checkbox para mostrar solo completadas -->
     <div style="margin-bottom: 15px;">
       <label>
-        <input type="checkbox" v-model="showDoneOnly" />
+        <input type="checkbox" v-model="hechas" />
         Mostrar solo tareas completadas
       </label>
     </div>
@@ -69,8 +69,8 @@ const newTask = ref('')
 const newDate = ref('')
 const tasks = ref([])
 
-const showPendingOnly = ref(false)
-const showDoneOnly = ref(false)
+const pendientes = ref(false)
+const hechas = ref(false)
 
 // Agregar tarea
 const addTask = () => {
@@ -96,10 +96,10 @@ const doneTasks = computed(() => tasks.value.filter(task => task.done))
 
 const displayedTasks = computed(() => {
   let list = [...tasks.value].sort((a, b) => new Date(a.date) - new Date(b.date))
-  if (showPendingOnly.value) {
+  if (pendientes.value) {
     list = list.filter(task => !task.done)
   }
-  if (showDoneOnly.value) {
+  if (hechas.value) {
     list = list.filter(task => task.done)
   }
   return list
