@@ -1,7 +1,7 @@
 <template>
   <!-- Contenedor principal -->
   <div class="container">
-    <h1>📝 To-Do List</h1>
+    <h1> To-Do List</h1>
 
     <!-- Formulario para escribir una nueva tarea -->
     <div class="form">
@@ -37,7 +37,7 @@
 
     <div class="task-info">
       <span class="task-text">{{ task.text }}</span>
-      <small class="task-date">📅 {{ task.date }}</small>
+      <small class="task-date"> {{ task.date }}</small>
     </div>
 
     <button class="delete" @click="deleteTask(index)">🗑️</button>
@@ -45,7 +45,7 @@
     </ul>
 
     <!-- Mensaje si no hay tareas -->
-    <p v-if="!tasks.length">No tienes tareas pendientes 🎉</p>
+    <p v-if="!tasks.length">No tienes tareas pendientes </p>
   </div>
 </template>
 
@@ -234,7 +234,7 @@ li:hover {
 input[type="checkbox"] {
   margin-right: 10px;
   transform: scale(1.3);
-  accent-color: #42b983; /* ✅ Color verde bonito */
+  accent-color: #42b983; /* Color verde */
   cursor: pointer;
 }
 
