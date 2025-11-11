@@ -2,8 +2,8 @@
   <div class="container">
     <h1>To-Do List</h1>
 
-    
-    <!-- Checkbox para mostrar solo pendientes -->
+    <TaskForm @add="addTask" />
+
     <div style="margin-bottom: 10px;">
       <label>
         <input type="checkbox" v-model="pendientes" />
@@ -11,7 +11,6 @@
       </label>
     </div>
 
-    <!-- Checkbox para mostrar solo completadas -->
     <div style="margin-bottom: 15px;">
       <label>
         <input type="checkbox" v-model="hechas" />
@@ -19,56 +18,35 @@
       </label>
     </div>
 
-    <!-- Conteos -->
+    <TaskList :tasks="displayedTasks" @delete="deleteTask" @toggle="toggleDone" />
+
     <p>Total de tareas: {{ tasks.length }}</p>
     <p>Tareas pendientes: {{ pendingTasks.length }}</p>
     <p>Tareas completadas: {{ doneTasks.length }}</p>
-
-    <!-- Mensaje si no hay tareas -->
     <p v-if="!tasks.length">No tienes tareas pendientes</p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import TaskForm from './components/TaskForm.vue'
+import TaskList from './components/TaskList.vue'
 
-const newTask = ref('')
-const newDate = ref('')
 const tasks = ref([])
-
 const pendientes = ref(false)
 const hechas = ref(false)
 
-// Agregar tarea
-const addTask = () => {
-  if (newTask.value.trim() !== '') {
-    tasks.value.push({
-      text: newTask.value.trim(),
-      done: false,
-      date: newDate.value || new Date().toISOString().slice(0, 10)
-    })
-    newTask.value = ''
-    newDate.value = ''
-  }
-}
+const addTask = (task) => tasks.value.push(task)
+const deleteTask = (index) => tasks.value.splice(index, 1)
+const toggleDone = (index) => tasks.value[index].done = !tasks.value[index].done
 
-// Eliminar tarea
-const deleteTask = (index) => {
-  tasks.value.splice(index, 1)
-}
-
-// Computed
 const pendingTasks = computed(() => tasks.value.filter(task => !task.done))
 const doneTasks = computed(() => tasks.value.filter(task => task.done))
 
 const displayedTasks = computed(() => {
   let list = [...tasks.value].sort((a, b) => new Date(a.date) - new Date(b.date))
-  if (pendientes.value) {
-    list = list.filter(task => !task.done)
-  }
-  if (hechas.value) {
-    list = list.filter(task => task.done)
-  }
+  if (pendientes.value) list = list.filter(task => !task.done)
+  if (hechas.value) list = list.filter(task => task.done)
   return list
 })
 </script>
