@@ -14,20 +14,24 @@ Este proyecto es una aplicación de lista de tareas (To-do List) desarrollada co
 
 ## Instalación
 1. Clona el repositorio:
-   ```bash
-   git clone
-   ``
+```bash
+git clone
+```
+
 2. Navega al directorio del proyecto:
-   ```bash
-    cd To-do-VUE
-    ```
+```bash
+cd To-do-VUE
+```
+
 3. Instala las dependencias:
-    ```bash
-    npm install
-    ```
+```bash
+npm install
+```
+
 4. Inicia la aplicación:
-    ```bash
-    npm run serve
-    ```
+```bash
+npm run serve
+```
+
 5. Abre tu navegador y visita `http://localhost:8080` para ver la aplicación en funcionamiento.
 
