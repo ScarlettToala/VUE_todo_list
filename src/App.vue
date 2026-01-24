@@ -8,18 +8,16 @@
       <!-- Input que se conecta a la variable newTask -->
       <!-- v-model Enlaza el texto al dato 'newTask' -->
       <!-- keyup.enter Si presionas Enter, se ejecuta addTask() -->
-      <input
-        v-model="newTask"               
-        type="text"
-        placeholder="Escribe una tarea..."
-        @keyup.enter="addTask"          
-      />
-      <input 
-      v-model="newDate"
-      type="date"
-      class="date-input">
+      <input v-model="newTask" type="text" placeholder="Escribe una tarea..." @keyup.enter="addTask" />
+      <input v-model="newDate" type="date" class="date-input" :min="today" :max="maxDate" />
+
 
       <button @click="addTask">Agregar</button> <!-- Botón que llama a addTask() -->
+      
+      <p v-if="errorMessage" class="error">
+        {{ errorMessage }}
+      </p>
+
     </div>
 
     <!-- Lista de tareas -->
@@ -28,73 +26,102 @@
       <!-- Recorre con v-for -->
       <!-- Clave única (requerida por Vue) -->
       <!-- Si la tarea está hecha, aplica la clase 'done' -->
-       <li
-    v-for="(task, index) in sortedTasks"
-    :key="index"
-    :class="{ done: task.done }"
-  >
-    <input type="checkbox" v-model="task.done" />
+      <li v-for="(task, index) in sortedTasks" :key="index" :class="{ done: task.done }">
+        <input type="checkbox" v-model="task.done" />
 
-    <div class="task-info">
-      <span class="task-text">{{ task.text }}</span>
-      <small class="task-date">📅 {{ task.date }}</small>
-    </div>
+        <div class="task-info">
+          <span class="task-text">{{ task.text }}</span>
+          <small class="task-date">{{ task.date }}</small>
+        </div>
 
-    <button class="delete" @click="deleteTask(index)">🗑️</button>
-  </li>
+        <button class="delete" @click="deleteTask(index)">🗑️</button>
+      </li>
     </ul>
 
     <!-- Mensaje si no hay tareas -->
-    <p v-if="!tasks.length">No tienes tareas pendientes 🎉</p>
+    <p v-if="!tasks.length">No tienes tareas pendientes </p>
   </div>
 </template>
 
 <script setup>
-// Importamos las funciones reactivas de Vue
-import { ref ,computed} from 'vue'
+import { ref, computed } from 'vue'
 
-// --------------------- VARIABLES REACTIVAS ---------------------
-
-// Texto actual del input
+// --------------------- VARIABLES ---------------------
 const newTask = ref('')
-
-//Fecha
 const newDate = ref('')
-
-// Lista de tareas (cada tarea es un objeto con { text, done })
 const tasks = ref([])
+const errorMessage = ref('')
 
+// Fecha mínima y máxima para el selector de fecha
+const today = new Date().toISOString().slice(0, 10)
 
-// --------------------- FUNCIONES PRINCIPALES ---------------------
+// Fecha máxima (hoy + 100 años)
+const maxDate = (() => {
+  const date = new Date()
+  date.setFullYear(date.getFullYear() + 100)
+  return date.toISOString().slice(0, 10)
+})()
 
-// Agregar una nueva tarea
-const addTask = () => {
-  // Si el input no está vacío...
-  if (newTask.value.trim() !== '') {
-    // Agregamos la nueva tarea al array
-    tasks.value.push({
-      text: newTask.value.trim(), // el texto escrito
-      done: false,                 // por defecto, no hecha
-      date: newDate.value || new Date().toISOString().slice(0,10)
-    })
-    // Limpiamos el input
-    newTask.value = ''
-    newDate.value = ''
+// ---------------- VALIDACIÓN ----------------
+const validateTask = () => {
+  if (newTask.value.trim() === '') {
+    errorMessage.value = 'La tarea no puede estar vacía'
+    return false
   }
+
+  if (newTask.value.trim().length < 3) {
+    errorMessage.value = 'La tarea debe tener al menos 3 caracteres'
+    return false
+  }
+
+  if (newTask.value.trim().length > 50) {
+    errorMessage.value = 'La tarea no puede superar los 50 caracteres'
+    return false
+  }
+
+  if (!newDate.value) {
+    errorMessage.value = 'Debes seleccionar una fecha'
+    return false
+  }
+
+  const selectedDate = new Date(newDate.value)
+  const min = new Date(today)
+  const max = new Date(maxDate)
+
+  if (selectedDate < min || selectedDate > max) {
+    errorMessage.value =
+      'La fecha debe estar entre hoy y los próximos 100 años'
+    return false
+  }
+
+  errorMessage.value = ''
+  return true
 }
 
-// Eliminar una tarea del array
+// --------------------- FUNCIONES ---------------------
+const addTask = () => {
+  if (!validateTask()) return
+
+  tasks.value.push({
+    text: newTask.value.trim(),
+    done: false,
+    date: newDate.value
+  })
+
+  newTask.value = ''
+  newDate.value = ''
+}
+
 const deleteTask = (index) => {
-  tasks.value.splice(index, 1) // elimina la tarea en esa posición
+  tasks.value.splice(index, 1)
 }
 
-//Orden de las fechas 
-const sortedTasks = computed(()=> {
-  return [...tasks.value].sort((a,b) => new Date(a.date) - new Date(b.date))
+const sortedTasks = computed(() => {
+  return [...tasks.value].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  )
 })
-
 </script>
-
 
 <style scoped>
 /* Contenedor principal */
@@ -234,7 +261,8 @@ li:hover {
 input[type="checkbox"] {
   margin-right: 10px;
   transform: scale(1.3);
-  accent-color: #42b983; /* ✅ Color verde bonito */
+  accent-color: #42b983;
+  /* ✅ Color verde bonito */
   cursor: pointer;
 }
 
@@ -258,5 +286,11 @@ p {
   margin-top: 20px;
 }
 
-
+/* Botón de Error*/
+.error {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 10px;
+  font-weight: 500;
+}
 </style>
