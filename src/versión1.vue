@@ -2,30 +2,45 @@
   <div class="container">
     <h1>To-Do List</h1>
 
-    <!-- Formulario para escribir una nueva tarea -->
+    <!-- Formulario para agregar tareas -->
     <div class="form">
-      <!-- Input que se conecta a la variable newTask -->
-      <!-- v-model Enlaza el texto al dato 'newTask' -->
-      <!-- keyup.enter Si presionas Enter, se ejecuta addTask() -->
-      <input v-model="newTask" type="text" placeholder="Escribe una tarea..." @keyup.enter="addTask" />
-      <input v-model="newDate" type="date" class="date-input" :min="today" :max="maxDate" />
+      <input
+        v-model="newTask"
+        type="text"
+        placeholder="Escribe una tarea..."
+        @keyup.enter="addTask"
+      />
+      <input
+        v-model="newDate"
+        type="date"
+        class="date-input"
+      />
+      <button @click="addTask">Agregar</button>
+    </div>
 
+    <!-- Checkbox para mostrar solo pendientes -->
+    <div style="margin-bottom: 10px;">
+      <label>
+        <input type="checkbox" v-model="pendientes" />
+        Mostrar solo tareas pendientes
+      </label>
+    </div>
 
-      <button @click="addTask">Agregar</button> <!-- Botón que llama a addTask() -->
-      
-      <p v-if="errorMessage" class="error">
-        {{ errorMessage }}
-      </p>
-
+    <!-- Checkbox para mostrar solo completadas -->
+    <div style="margin-bottom: 15px;">
+      <label>
+        <input type="checkbox" v-model="hechas" />
+        Mostrar solo tareas completadas
+      </label>
     </div>
 
     <!-- Lista de tareas -->
     <ul>
-      <!-- Recorre el arreglo 'tasks' y muestra cada tarea -->
-      <!-- Recorre con v-for -->
-      <!-- Clave única (requerida por Vue) -->
-      <!-- Si la tarea está hecha, aplica la clase 'done' -->
-      <li v-for="(task, index) in sortedTasks" :key="index" :class="{ done: task.done }">
+      <li
+        v-for="(task, index) in displayedTasks"
+        :key="index"
+        :class="{ done: task.done }"
+      >
         <input type="checkbox" v-model="task.done" />
 
         <div class="task-info">
@@ -37,90 +52,57 @@
       </li>
     </ul>
 
-    <!-- Mensaje si no hay tareas -->
-    <p v-if="!tasks.length">No tienes tareas pendientes </p>
+    <!-- Conteos -->
+    <p>Total de tareas: {{ tasks.length }}</p>
+    <p>Tareas pendientes: {{ pendingTasks.length }}</p>
+    <p>Tareas completadas: {{ doneTasks.length }}</p>
 
+    <!-- Mensaje si no hay tareas -->
+    <p v-if="!tasks.length">No tienes tareas pendientes</p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 
-
-// --------------------- VARIABLES ---------------------
 const newTask = ref('')
 const newDate = ref('')
 const tasks = ref([])
-const errorMessage = ref('')
 
-// Fecha mínima y máxima para el selector de fecha
-const today = new Date().toISOString().slice(0, 10)
+const pendientes = ref(false)
+const hechas = ref(false)
 
-// Fecha máxima (hoy + 100 años)
-const maxDate = (() => {
-  const date = new Date()
-  date.setFullYear(date.getFullYear() + 100)
-  return date.toISOString().slice(0, 10)
-})()
-
-// ---------------- VALIDACIÓN ----------------
-const validateTask = () => {
-  if (newTask.value.trim() === '') {
-    errorMessage.value = 'La tarea no puede estar vacía'
-    return false
-  }
-
-  if (newTask.value.trim().length < 3) {
-    errorMessage.value = 'La tarea debe tener al menos 3 caracteres'
-    return false
-  }
-
-  if (newTask.value.trim().length > 50) {
-    errorMessage.value = 'La tarea no puede superar los 50 caracteres'
-    return false
-  }
-
-  if (!newDate.value) {
-    errorMessage.value = 'Debes seleccionar una fecha'
-    return false
-  }
-
-  const selectedDate = new Date(newDate.value)
-  const min = new Date(today)
-  const max = new Date(maxDate)
-
-  if (selectedDate < min || selectedDate > max) {
-    errorMessage.value =
-      'La fecha debe estar entre hoy y los próximos 100 años'
-    return false
-  }
-
-  errorMessage.value = ''
-  return true
-}
-
-// --------------------- FUNCIONES ---------------------
+// Agregar tarea
 const addTask = () => {
-  if (!validateTask()) return
-
-  tasks.value.push({
-    text: newTask.value.trim(),
-    done: false,
-    date: newDate.value
-  })
-
-  newTask.value = ''
-  newDate.value = ''
+  if (newTask.value.trim() !== '') {
+    tasks.value.push({
+      text: newTask.value.trim(),
+      done: false,
+      date: newDate.value || new Date().toISOString().slice(0, 10)
+    })
+    newTask.value = ''
+    newDate.value = ''
+  }
 }
 
+// Eliminar tarea
 const deleteTask = (index) => {
   tasks.value.splice(index, 1)
 }
 
-const sortedTasks = computed(() => {
-  return [...tasks.value].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  )
+// Computed
+const pendingTasks = computed(() => tasks.value.filter(task => !task.done))
+const doneTasks = computed(() => tasks.value.filter(task => task.done))
+
+const displayedTasks = computed(() => {
+  let list = [...tasks.value].sort((a, b) => new Date(a.date) - new Date(b.date))
+  if (pendientes.value) {
+    list = list.filter(task => !task.done)
+  }
+  if (hechas.value) {
+    list = list.filter(task => task.done)
+  }
+  return list
 })
 </script>
 
@@ -254,10 +236,6 @@ input[type="checkbox"] {
   margin-right: 10px;
   transform: scale(1.3);
   accent-color: #42b983;
-<<<<<<< HEAD
-  /* ✅ Color verde bonito */
-=======
->>>>>>> 0aed675e749ea1aa605e2a133bef98aa941c6fbc
   cursor: pointer;
 }
 
@@ -277,15 +255,4 @@ p {
   font-style: italic;
   margin-top: 20px;
 }
-<<<<<<< HEAD
-
-/* Botón de Error*/
-.error {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-top: 10px;
-  font-weight: 500;
-}
-=======
->>>>>>> 0aed675e749ea1aa605e2a133bef98aa941c6fbc
 </style>
